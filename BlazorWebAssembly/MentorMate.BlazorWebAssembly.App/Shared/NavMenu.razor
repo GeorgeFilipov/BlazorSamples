@@ -1,0 +1,26 @@
+﻿@inject ChatState ChatState
+
+<ul class="menu">
+    <li>
+        <a class="list-item" href="">
+            <span class="oi oi-grid-four-up"></span>
+        </a>
+    </li>
+    <li>
+        <button class="list-item" @onclick="ChatState.ToggleChatWindow">
+            <span class="oi oi-chat"></span>
+        </button>
+    </li>
+</ul>
+
+@code {
+    protected override void OnInitialized()
+    {
+        ChatState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        ChatState.OnChange -= StateHasChanged;
+    }
+}

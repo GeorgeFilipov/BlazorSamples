@@ -1,0 +1,132 @@
+﻿@using Microsoft.AspNetCore.SignalR.Client
+@implements IAsyncDisposable
+@inject MentorMate.Shared.DataService DataService;
+@inject ChatState ChatState
+@inject IJSRuntime JsRuntime
+
+<div class="chat @(ChatState.ShowChatWindow ? "show" : "hide")">
+    <div class="chat-title">
+        <h1>@(!HasChosenUsername ? "Anonymous User" : userNameInput)</h1>
+        <h2>User</h2>
+        <figure class="avatar">
+            <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/156381/profile/profile-80.jpg" />
+        </figure>
+    </div>
+    <div class="messages">
+        <div class="messages-content">
+            @if (!HasChosenUsername)
+            {
+                <div class="py-3">
+                    <label for="userName">Enter your name:</label>
+                    <input class="user-name" id="userName" name="userName" @bind="userNameInput" @bind:event="oninput" onkeydown="@EnterUserName" />
+                    <button type="button" class="btn-add-user" @onclick="AddUserName">Save</button>
+                </div>
+            }
+            else
+            {
+                @foreach (var message in messages)
+                {
+                    @if (!message.SendByMe)
+                    {
+                        <div class="message new">
+                            <figure class="avatar">
+                                <img src="/profile-80.jpg">
+                            </figure>@message.Text
+                            <div class="timestamp">@message.Date.ToString("HH:mm")</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="message message-personal new">
+                            @message.Text
+                            <div class="timestamp">@message.Date.ToString("HH:mm")</div>
+                        </div>
+                    }
+                }
+            }
+        </div>
+    </div>
+    <div class="message-box">
+        <textarea type="text" @bind="messageInput" @bind:event="oninput" @onkeydown="@EnterMessageAsync" class="message-input" placeholder="Type message..."></textarea>
+        <button type="button" class="message-submit" @onclick="Send" disabled="@(!IsConnected)">Send</button>
+        <button type="button" class="close-chat" @onclick="ChatState.ToggleChatWindow">Close</button>
+    </div>
+
+</div>
+
+@code {
+    private HubConnection? hubConnection;
+    private List<Message> messages = new List<Message>();
+    private string? userNameInput = string.Empty;
+    private string? messageInput;
+    private bool HasChosenUsername = false;
+
+    public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
+
+    public async Task EnterMessageAsync(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter")
+        {
+            await Send();
+        }
+    }
+
+    public void EnterUserName(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter")
+        {
+            AddUserName();
+        }
+    }
+
+    private async Task Send()
+    {
+        if (hubConnection is not null)
+        {
+            if (string.IsNullOrWhiteSpace(messageInput))
+            {
+                return;
+            }
+
+            var newMessage = new Message() { Text = messageInput, UserName = userNameInput };
+
+            messages.Add(newMessage);
+            await JsRuntime.InvokeVoidAsync("Chat.scrollToBottom");
+            await hubConnection.SendAsync("SendMessage", newMessage);
+
+            messageInput = string.Empty;
+        }
+    }
+
+    private void AddUserName()
+    {
+        HasChosenUsername = true;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ChatState.OnChange += StateHasChanged;
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(DataService.ToAbsoluteUri("/chathub"))
+            .Build();
+
+        hubConnection.On<Message>("ReceiveMessage", async (message) =>
+        {
+            messages.Add(message);
+            await JsRuntime.InvokeVoidAsync("Chat.scrollToBottom");
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        ChatState.OnChange -= StateHasChanged;
+
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}
