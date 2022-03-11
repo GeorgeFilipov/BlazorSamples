@@ -42,9 +42,9 @@
 @code {
     private HubConnection? hubConnection;
     private List<Message> messages = new List<Message>();
-    private string userNameInput = string.Empty;
+    private bool HasChosenUsername = true;//false
+    private string userNameInput = "Anonymous User";//string.Empty;
     private string? messageInput;
-    private bool HasChosenUsername = false;
 
     public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
 
