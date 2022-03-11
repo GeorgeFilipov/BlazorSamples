@@ -18,7 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorServer", "BlazorServe
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorWebAssembly", "BlazorWebAssembly", "{C2EC2193-2FA3-4037-B36D-8CCF5FF7F0BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MentorMate.Shared", "MentorMate.Shared\MentorMate.Shared.csproj", "{91CAE89A-CC40-434B-A037-FAAC09AAEDD9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MentorMate.Shared", "MentorMate.Shared\MentorMate.Shared.csproj", "{91CAE89A-CC40-434B-A037-FAAC09AAEDD9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

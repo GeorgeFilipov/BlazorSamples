@@ -1,0 +1,23 @@
+﻿@if (Message != null)
+{
+    @if (!Message.SendByMe)
+    {
+        <div class="message new">
+            <figure class="avatar">
+                <img src="/profile-80.jpg">
+            </figure>@Message.Text
+            <div class="timestamp">@Message.Date.ToString("HH:mm")</div>
+        </div>
+    }
+    else
+    {
+        <div class="message message-personal new">
+            @Message.Text
+            <div class="timestamp">@Message.Date.ToString("HH:mm")</div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public Message? Message { get; set; }
+}
